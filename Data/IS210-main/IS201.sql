@@ -53,7 +53,8 @@ CREATE TABLE HoaDon (
    TongGiaTriHoaDon DECIMAL(18, 2),
    NgayXuat DATE,
    MaKhachHang INT,
-   MaKhuyenMai INT
+   MaKhuyenMai INT,
+   MaNhanVien INT
 );
 
 ALTER TABLE HoaDon
@@ -157,15 +158,21 @@ CREATE TABLE NhanVien (
 );
 
 ALTER TABLE HoaDon
+ADD FOREIGN KEY(MaNhanVien) REFERENCES NhanVien(MaNhanVien)
+
+ALTER TABLE HoaDon
+ADD FOREIGN KEY(MaNhanVien) REFERENCES NhanVien(MaNhanVien)
+
+ALTER TABLE HoaDon
 ADD FOREIGN KEY (MaKhachHang) REFERENCES KhachHang(MaKhachHang);
 
 -- DanhMucSanPham Table
 CREATE TABLE DanhMucSanPham (
    MaDanhMuc INT AUTO_INCREMENT PRIMARY KEY,
-   TenSanPham NVARCHAR(100),
-   HinhSanPham NVARCHAR(255),
-   LoaiSanPham NVARCHAR(50),
-   MoTaSanPham NVARCHAR(4000),
+   TenDanhMuc NVARCHAR(100),
+   HinhDanhMuc NVARCHAR(255),
+   LoaiDanhMuc NVARCHAR(50),
+   MoTaDanhMuc NVARCHAR(4000),
    MaKhuyenMai INT,
    DoanhThu DECIMAL(18, 2)
 );
@@ -198,7 +205,7 @@ VALUES
    (2, N'hinhdaidien_user1.jpg', 2, N'Trần Thị B', '1985-09-22', N'456 Đường XYZ, Quận 2, TP.HCM', N'0987654321', 50, 500000),
    (3, N'hinhdaidien_user2.jpg', 3, N'Lê Văn C', '1992-11-05', N'789 Đường PQR, Quận 3, TP.HCM', N'0912345679', 75, 750000);
   
-INSERT INTO DanhMucSanPham (TenSanPham, HinhSanPham, LoaiSanPham, MoTaSanPham, MaKhuyenMai, DoanhThu)
+INSERT INTO DanhMucSanPham (TenDanhMuc, HinhDanhMuc, LoaiDanhMuc, MoTaDanhMuc, MaKhuyenMai, DoanhThu)
 VALUES
     (N'Trang Sức', N'trang-suc.jpg', N'Trang Sức', N'Các sản phẩm trang sức cao cấp', NULL, 0),
     (N'Dây Chuyền', N'day-chuyen.jpg', N'Trang Sức', N'Các sản phẩm dây chuyền', NULL, 0),
@@ -269,18 +276,18 @@ VALUES
     (14, 2, N'Dây chuyền vàng trắng 14K đơn giản nhưng rất tinh tế.', '2023-06-08'),
     (15, 3, N'Dây chuyền đính đá Emerald xanh ngọc, sự kết hợp hoàn hảo giữa vàng và đá quý.', '2023-06-12');
 
-INSERT INTO HoaDon (TongGiaTriHoaDon, NgayXuat, MaKhachHang, MaKhuyenMai)
+INSERT INTO HoaDon (TongGiaTriHoaDon, NgayXuat, MaKhachHang, MaKhuyenMai, MaNhanVien)
 VALUES
-    (1000000, '2023-05-01', 1, 1),
-    (500000, '2023-05-10', 2, 2),
-    (750000, '2023-05-15', 3, 1),
-    (2000000, '2023-05-20', 1, NULL),
-    (1500000, '2023-05-25', 2, 3),
-    (3000000, '2023-06-01', 3, 1),
-    (5000000, '2023-06-05', 1, 2),
-    (1200000, '2023-06-10', 2, NULL),
-    (1000000, '2023-06-15', 3, 3),
-    (2500000, '2023-06-20', 1, 1);
+    (1000000, '2023-05-01', 1, 1, 1),
+    (500000, '2023-05-10', 2, 2, 2),
+    (750000, '2023-05-15', 3, 1, 2),
+    (2000000, '2023-05-20', 1, null, 3),
+    (1500000, '2023-05-25', 2, 3, 3),
+    (3000000, '2023-06-01', 3, 1, 1),
+    (5000000, '2023-06-05', 1, 2, 3),
+    (1200000, '2023-06-10', 2, null, 4),
+    (1000000, '2023-06-15', 3, 3, 4),
+    (2500000, '2023-06-20', 1, 1, 1);
 
 INSERT INTO ChiTietHoaDon (MaHoaDon, MaSanPham, SoLuong, TongGia)
 VALUES
