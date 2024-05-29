@@ -280,23 +280,25 @@ DELIMITER ;
 
 -- CALL HuyHoaDon(2); -- Thay 1 bằng MaHoaDon cần hủy
 
--- drop trigger trig_insert_khachhang
+-- drop trigger trig_insert_hoadon
+
 
 DELIMITER $$
-CREATE TRIGGER trig_insert_hoadon
-AFTER INSERT ON HoaDon
+CREATE TRIGGER trig_insert_khachhang
+AFTER INSERT ON KhachHang
 FOR EACH ROW
 BEGIN
     DECLARE random_manhanvien INT;
-    
-     -- Tạo giỏ hàng mới
+	-- Tạo giỏ hàng mới
+	
     INSERT INTO GioHang (MaKhachHang)
     VALUES (NEW.MaKhachHang);
 
     -- Tạo hóa đơn mới
     INSERT INTO HoaDon (MaKhachHang)
     VALUES (NEW.MaKhachHang);
-    -- Cập nhật MaNhanVien cho hóa đơn mới
+
+    -- Gán nhân viên ngẫu nhiên cho hóa đơn mới
     SELECT MaNhanVien INTO random_manhanvien
     FROM NhanVien
     ORDER BY RAND()

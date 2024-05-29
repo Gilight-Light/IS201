@@ -149,6 +149,7 @@ ADD FOREIGN KEY (MaSanPham) REFERENCES SanPhamDangBan(MaSanPham);
 -- NhanVien Table
 CREATE TABLE NhanVien (
    MaNhanVien INT AUTO_INCREMENT PRIMARY KEY,
+   MaTaiKhoan INT,
    TenNhanVien NVARCHAR(100),
    HinhDaiDien NVARCHAR(255),
    VaiTro NVARCHAR(50),
@@ -156,6 +157,9 @@ CREATE TABLE NhanVien (
    NgaySinh DATE,
    NgayVaoLam DATE
 );
+
+ALTER TABLE NhanVien
+ADD FOREIGN KEY (MaTaiKhoan) REFERENCES TaiKhoan(MaTaiKhoan)
 
 ALTER TABLE HoaDon
 ADD FOREIGN KEY(MaNhanVien) REFERENCES NhanVien(MaNhanVien)
@@ -197,7 +201,11 @@ INSERT INTO TaiKhoan (TenTaiKhoan, MatKhau, NgayLap, LoaiTaiKhoan)
 VALUES
    (N'admin', N'matkhaunguoilon', '2023-01-01', N'Admin'),
    (N'user1', N'matkhauuser1', '2023-02-15', N'Khách hàng'),
-   (N'user2', N'matkhauuser2', '2023-03-20', N'Khách hàng');
+   (N'user2', N'matkhauuser2', '2023-03-20', N'Khách hàng'),
+   (N'nv1', N'matkhaunv1', '2023-03-20', N'Nhân viên'),
+   (N'nv2', N'matkhaunv2', '2023-03-20', N'Nhân viên'),
+   (N'nv3', N'matkhaunv3', '2023-03-20', N'Nhân viên'),
+   (N'nv4', N'matkhaunv4', '2023-03-20', N'Nhân viên');
    
 INSERT INTO KhachHang (MaTaiKhoan, HinhDaiDien, GioHang, TenKhachHang, NgaySinh, DiaChi, SoDienThoai, DiemTichLuy, TongGiaTriHoaDon)
 VALUES
@@ -303,12 +311,12 @@ VALUES
     (9, 13, 1, 25000000),
     (10, 14, 1, 535000);
    
-INSERT INTO NhanVien (TenNhanVien, HinhDaiDien, VaiTro, HeSoLuong, NgaySinh, NgayVaoLam)
+INSERT INTO NhanVien (MaTaiKhoan,TenNhanVien, HinhDaiDien, VaiTro, HeSoLuong, NgaySinh, NgayVaoLam)
 VALUES
-    (N'Nguyễn Văn B', N'nhanvien_nguyen_van_b.jpg', N'Quản lý', 3.5, '1980-08-15', '2020-01-01'),
-    (N'Trần Thị C', N'nhanvien_tran_thi_c.jpg', N'Bán hàng', 2.0, '1990-05-20', '2021-03-10'),
-    (N'Lê Văn D', N'nhanvien_le_van_d.jpg', N'Thủ kho', 2.8, '1985-07-25', '2022-05-15'),
-    (N'Phạm Thị E', N'nhanvien_pham_thi_e.jpg', N'Nhân viên kỹ thuật', 2.5, '1992-11-30', '2023-02-20');
+    (4,N'Nguyễn Văn B', N'nhanvien_nguyen_van_b.jpg', N'Quản lý', 3.5, '1980-08-15', '2020-01-01'),
+    (5,N'Trần Thị C', N'nhanvien_tran_thi_c.jpg', N'Bán hàng', 2.0, '1990-05-20', '2021-03-10'),
+    (6,N'Lê Văn D', N'nhanvien_le_van_d.jpg', N'Thủ kho', 2.8, '1985-07-25', '2022-05-15'),
+    (7,N'Phạm Thị E', N'nhanvien_pham_thi_e.jpg', N'Nhân viên kỹ thuật', 2.5, '1992-11-30', '2023-02-20');
 
 INSERT INTO GioHang (MaKhachHang)
 VALUES
