@@ -1,7 +1,7 @@
 
 -- Xóa sản phẩm khỏi bảng SanPhamDangBan -> Xóa các bản ghi tương ứng trong bảng DanhGiaSanPham, ChiTietHoaDon và ChiTietGioHang, Thay đổi số lượng tồn kho
 DELIMITER $$
-create or alter  PROCEDURE DeleteProduct(IN product_id INT)
+create PROCEDURE DeleteProduct(IN product_id INT)
 BEGIN
     DECLARE product_quantity INT;
     
@@ -293,66 +293,98 @@ BEGIN
 	
     INSERT INTO GioHang (MaKhachHang)
     VALUES (NEW.MaKhachHang);
-
-    -- Tạo hóa đơn mới
-    INSERT INTO HoaDon (MaKhachHang)
-    VALUES (NEW.MaKhachHang);
-
-    -- Gán nhân viên ngẫu nhiên cho hóa đơn mới
-    SELECT MaNhanVien INTO random_manhanvien
-    FROM NhanVien
-    ORDER BY RAND()
-    LIMIT 1;
-
-    UPDATE HoaDon
-    SET MaNhanVien = random_manhanvien
-    WHERE MaKhachHang = NEW.MaKhachHang
-    ORDER BY MaHoaDon DESC
-    LIMIT 1;
 END$$
 DELIMITER ;
+
+
+-- drop procedure CapNhatGioHang;
+-- call CapNhatGioHang(1,3,1,1);
 
 
 DELIMITER $$
 CREATE PROCEDURE CapNhatGioHang(
-    IN p_MaKhachHang INT,
-    IN p_MaSanPham INT,
-    IN p_SoLuong INT
-)
-BEGIN
-    DECLARE v_MaGioHang INT;
-    DECLARE v_GiaNiemYet DECIMAL(18, 2);
-
-    -- Lấy MaGioHang của khách hàng
-    SELECT MaGioHang INTO v_MaGioHang
-    FROM GioHang 
-    WHERE MaKhachHang = p_MaKhachHang;
-
-    -- Lấy GiaNiemYet của sản phẩm
-    SELECT GiaNiemYet INTO v_GiaNiemYet
-    FROM SanPhamDangBan
-    WHERE MaSanPham = p_MaSanPham;
-
-    -- Chuyển từ ChiTietGioHang sang ChiTietHoaDon
-    INSERT INTO ChiTietHoaDon (MaHoaDon, MaSanPham, SoLuong, TongGia)
-    SELECT MaHoaDon, p_MaSanPham, p_SoLuong, p_SoLuong * v_GiaNiemYet
-    FROM HoaDon
-    WHERE MaKhachHang = p_MaKhachHang
-    ORDER BY MaHoaDon DESC
-    LIMIT 1;
-
-    -- Cập nhật ChiTietGioHang
-    IF p_SoLuong = 0 THEN
-        DELETE FROM ChiTietGioHang
-        WHERE MaGioHang = v_MaGioHang
-          AND MaSanPham = p_MaSanPham;
-    ELSE
-        UPDATE ChiTietGioHang
-        SET SoLuong = SoLuong - p_SoLuong
-        WHERE MaGioHang = v_MaGioHang
-          AND MaSanPham = p_MaSanPham;
-    END IF;
-END$$
+	IN p_MaKhachHang INT,
+	IN p_MaSanPham INT,
+	IN p_SoLuong INT,
+	IN p_MaHoaDon INT
+	)
+	BEGIN
+		DECLARE v_MaGioHang INT;
+		DECLARE v_GiaNiemYet DECIMAL(18, 2);
+		DECLARE v_MaKhuyenMai INT;
+		DECLARE v_GiaTriKhuyenMai FLOAT;
+		declare v_SanPhamGioHang INT;
+		
+		-- Lấy MaGioHang của khách hàng
+		SELECT MaGioHang INTO v_MaGioHang
+		FROM GioHang
+		WHERE MaKhachHang = p_MaKhachHang;
+		
+		-- Lấy GiaNiemYet của sản phẩm
+		SELECT GiaNiemYet INTO v_GiaNiemYet
+		FROM SanPhamDangBan
+		WHERE MaSanPham = p_MaSanPham;
+		
+		-- Kiểm tra giá trị khuyến mãi
+		SELECT spdb.MaKhuyenMai, km.GiaTriKhuyenMai INTO v_MaKhuyenMai, v_GiaTriKhuyenMai
+		FROM SanPhamDangBan spdb
+		LEFT JOIN KhuyenMai km ON spdb.MaKhuyenMai = km.MaKhuyenMai
+		WHERE spdb.MaSanPham = p_MaSanPham;
+		
+		IF v_MaKhuyenMai IS NULL THEN
+		    SET v_GiaTriKhuyenMai = 0;
+		END IF;
+		
+		-- Chuyển từ ChiTietGioHang sang ChiTietHoaDon
+		INSERT INTO ChiTietHoaDon (MaHoaDon, MaSanPham, SoLuong, MaKhuyenMai,TongGia)
+		VALUES (p_MaHoaDon, p_MaSanPham, p_SoLuong, v_MaKhuyenMai, p_SoLuong * v_GiaNiemYet * (1 - v_GiaTriKhuyenMai));
+		
+		select SoLuong into v_SanPhamGioHang
+		from ChiTietGioHang
+		where MaGioHang = v_MaGioHang
+		AND MaSanPham = p_MaSanPham;
+		-- Cập nhật ChiTietGioHang
+		IF v_SanPhamGioHang = p_SoLuong  THEN
+		    DELETE FROM ChiTietGioHang
+		    WHERE MaGioHang = v_MaGioHang
+		    AND MaSanPham = p_MaSanPham;
+		ELSE
+		    UPDATE ChiTietGioHang
+		    SET SoLuong = SoLuong - p_SoLuong
+		    WHERE MaGioHang = v_MaGioHang
+		    AND MaSanPham = p_MaSanPham;
+		END IF;
+	END$$
 DELIMITER ;
 
+
 -- CALL CapNhatGioHang(1, 2, 3);
+DELIMITER $$
+CREATE PROCEDURE sp_TaoKhachHang(
+    IN TenTaiKhoan NVARCHAR(50),
+    IN MatKhau NVARCHAR(25),
+    IN HinhDaiDien NVARCHAR(255),
+    IN TenKhachHang NVARCHAR(100),
+    IN NgaySinh DATE,
+    IN DiaChi NVARCHAR(255),
+    IN SoDienThoai NVARCHAR(15),
+    OUT KhachHangID INT
+)
+BEGIN
+    DECLARE GioHangID INT;
+    
+    -- Tạo mới giỏ hàng
+    INSERT INTO GioHang (MaKhachHang) VALUES (NULL);
+    SET GioHangID = LAST_INSERT_ID();
+    
+    -- Tạo mới khách hàng
+    INSERT INTO KhachHang (TenTaiKhoan, MatKhau, NgayLap, HinhDaiDien, GioHang, TenKhachHang, NgaySinh, DiaChi, SoDienThoai, DiemTichLuy, TongGiaTriHoaDon)
+    VALUES (TenTaiKhoan, MatKhau, CURRENT_DATE(), HinhDaiDien, GioHangID, TenKhachHang, NgaySinh, DiaChi, SoDienThoai, 0, 0);
+    
+    SET KhachHangID = LAST_INSERT_ID();
+end$$
+DELIMITER ;
+
+-- CALL sp_TaoKhachHang('tentaikhoan', 'matkhau', 'hinhdaidien', 'tenkh', '1990-01-01', 'diachi', '0123456789', @KhachHangID);
+-- SELECT @KhachHangID;
+

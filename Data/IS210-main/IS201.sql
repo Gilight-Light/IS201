@@ -42,7 +42,7 @@ ADD FOREIGN KEY (MaSanPham) REFERENCES SanPhamDangBan(MaSanPham);
 CREATE TABLE KhuyenMai (
    MaKhuyenMai INT AUTO_INCREMENT PRIMARY KEY,
    TenKhuyenMai NVARCHAR(100),
-   GiaTriKhuyenMai DECIMAL(18, 2),
+   GiaTriKhuyenMai FLOAT,
    TinhTrang NVARCHAR(50),
    LoaiKhuyenMai NVARCHAR(50)
 );
@@ -53,21 +53,22 @@ CREATE TABLE HoaDon (
    TongGiaTriHoaDon DECIMAL(18, 2),
    NgayXuat DATE,
    MaKhachHang INT,
-   MaKhuyenMai INT,
    MaNhanVien INT
 );
 
-ALTER TABLE HoaDon
-ADD FOREIGN KEY (MaKhuyenMai) REFERENCES KhuyenMai(MaKhuyenMai);
+
 
 -- ChiTietHoaDon Table
 CREATE TABLE ChiTietHoaDon (
    MaHoaDon INT,
    MaSanPham INT,
    SoLuong INT,
+   MaKhuyenMai INT,
    TongGia DECIMAL(18, 2),
    PRIMARY KEY (MaHoaDon, MaSanPham)
 );
+ALTER TABLE ChiTietHoaDon
+ADD FOREIGN KEY (MaKhuyenMai) REFERENCES KhuyenMai(MaKhuyenMai);
 
 ALTER TABLE ChiTietHoaDon
 ADD FOREIGN KEY (MaHoaDon) REFERENCES HoaDon(MaHoaDon);
@@ -97,19 +98,13 @@ CREATE TABLE ChienLuocTiepThi (
    NgayLap DATE
 );
 
--- TaiKhoan Table
-CREATE TABLE TaiKhoan (
-   MaTaiKhoan INT AUTO_INCREMENT PRIMARY KEY,
-   TenTaiKhoan NVARCHAR(50),
-   MatKhau NVARCHAR(255),
-   NgayLap DATE,
-   LoaiTaiKhoan NVARCHAR(50)
-);
 
 -- KhachHang Table
 CREATE TABLE KhachHang (
    MaKhachHang INT AUTO_INCREMENT PRIMARY KEY,
-   MaTaiKhoan INT,
+   TenTaiKhoan NVARCHAR(50),
+   MatKhau NVARCHAR(25),
+   NgayLap DATE,
    HinhDaiDien NVARCHAR(255),
    GioHang INT UNIQUE,
    TenKhachHang NVARCHAR(100),
@@ -120,8 +115,6 @@ CREATE TABLE KhachHang (
    TongGiaTriHoaDon DECIMAL(18, 2)
 );
 
-ALTER TABLE KhachHang
-ADD FOREIGN KEY (MaTaiKhoan) REFERENCES TaiKhoan(MaTaiKhoan);
 
 -- GioHang Table
 CREATE TABLE GioHang (
@@ -149,7 +142,9 @@ ADD FOREIGN KEY (MaSanPham) REFERENCES SanPhamDangBan(MaSanPham);
 -- NhanVien Table
 CREATE TABLE NhanVien (
    MaNhanVien INT AUTO_INCREMENT PRIMARY KEY,
-   MaTaiKhoan INT,
+   TenTaiKhoan NVARCHAR(50),
+   MatKhau NVARCHAR(25),
+   NgayLap DATE,
    TenNhanVien NVARCHAR(100),
    HinhDaiDien NVARCHAR(255),
    VaiTro NVARCHAR(50),
@@ -158,8 +153,6 @@ CREATE TABLE NhanVien (
    NgayVaoLam DATE
 );
 
-ALTER TABLE NhanVien
-ADD FOREIGN KEY (MaTaiKhoan) REFERENCES TaiKhoan(MaTaiKhoan)
 
 ALTER TABLE HoaDon
 ADD FOREIGN KEY(MaNhanVien) REFERENCES NhanVien(MaNhanVien)
@@ -168,7 +161,7 @@ ALTER TABLE HoaDon
 ADD FOREIGN KEY(MaNhanVien) REFERENCES NhanVien(MaNhanVien)
 
 ALTER TABLE HoaDon
-ADD FOREIGN KEY (MaKhachHang) REFERENCES KhachHang(MaKhachHang);
+ADD FOREIGN KEY (MaKhachHang) REFERENCES KhachHang(MaKhachHang)
 
 -- DanhMucSanPham Table
 CREATE TABLE DanhMucSanPham (
@@ -190,6 +183,7 @@ ADD FOREIGN KEY (MaDanhMuc) REFERENCES DanhMucSanPham(MaDanhMuc);
 ALTER TABLE ChienLuocTiepThi
 ADD FOREIGN KEY (MaDanhMuc) REFERENCES DanhMucSanPham(MaDanhMuc);
 
+
 -- Chèn dữ liệu cho bảng KhuyenMai
 INSERT INTO KhuyenMai (TenKhuyenMai, GiaTriKhuyenMai, TinhTrang, LoaiKhuyenMai)
 VALUES
@@ -197,21 +191,12 @@ VALUES
    (N'Mua 1 tặng 1', 0.5, N'Đang áp dụng', N'Khuyến mãi'),
    (N'Tích lũy điểm đổi quà', NULL, N'Đang áp dụng', N'Tích điểm');
    
-INSERT INTO TaiKhoan (TenTaiKhoan, MatKhau, NgayLap, LoaiTaiKhoan)
-VALUES
-   (N'admin', N'matkhaunguoilon', '2023-01-01', N'Admin'),
-   (N'user1', N'matkhauuser1', '2023-02-15', N'Khách hàng'),
-   (N'user2', N'matkhauuser2', '2023-03-20', N'Khách hàng'),
-   (N'nv1', N'matkhaunv1', '2023-03-20', N'Nhân viên'),
-   (N'nv2', N'matkhaunv2', '2023-03-20', N'Nhân viên'),
-   (N'nv3', N'matkhaunv3', '2023-03-20', N'Nhân viên'),
-   (N'nv4', N'matkhaunv4', '2023-03-20', N'Nhân viên');
    
-INSERT INTO KhachHang (MaTaiKhoan, HinhDaiDien, GioHang, TenKhachHang, NgaySinh, DiaChi, SoDienThoai, DiemTichLuy, TongGiaTriHoaDon)
+INSERT INTO KhachHang (TenTaiKhoan, MatKhau, NgayLap, HinhDaiDien, GioHang, TenKhachHang, NgaySinh, DiaChi, SoDienThoai, DiemTichLuy, TongGiaTriHoaDon)
 VALUES
-   (1, N'hinhdaidien_admin.jpg', 1, N'Nguyễn Văn A', '1990-05-15', N'123 Đường ABC, Quận 1, TP.HCM', N'0912345678', 100, 1000000),
-   (2, N'hinhdaidien_user1.jpg', 2, N'Trần Thị B', '1985-09-22', N'456 Đường XYZ, Quận 2, TP.HCM', N'0987654321', 50, 500000),
-   (3, N'hinhdaidien_user2.jpg', 3, N'Lê Văn C', '1992-11-05', N'789 Đường PQR, Quận 3, TP.HCM', N'0912345679', 75, 750000);
+   (N'user1', N'matkhauuser1', '2023-02-15', N'hinhdaidien_admin.jpg', 1, N'Nguyễn Văn A', '1990-05-15', N'123 Đường ABC, Quận 1, TP.HCM', N'0912345678', 100, 1000000),
+   (N'user2', N'matkhauuser2', '2023-02-20', N'hinhdaidien_user1.jpg', 2, N'Trần Thị B', '1985-09-22', N'456 Đường XYZ, Quận 2, TP.HCM', N'0987654321', 50, 500000),
+   (N'user3', N'matkhauuser3', '2023-02-10', N'hinhdaidien_user2.jpg', 3, N'Lê Văn C', '1992-11-05', N'789 Đường PQR, Quận 3, TP.HCM', N'0912345679', 75, 750000);
   
 INSERT INTO DanhMucSanPham (TenDanhMuc, HinhDanhMuc, LoaiDanhMuc, MoTaDanhMuc, MaKhuyenMai, DoanhThu)
 VALUES
@@ -284,39 +269,41 @@ VALUES
     (14, 2, N'Dây chuyền vàng trắng 14K đơn giản nhưng rất tinh tế.', '2023-06-08'),
     (15, 3, N'Dây chuyền đính đá Emerald xanh ngọc, sự kết hợp hoàn hảo giữa vàng và đá quý.', '2023-06-12');
 
-INSERT INTO HoaDon (TongGiaTriHoaDon, NgayXuat, MaKhachHang, MaKhuyenMai, MaNhanVien)
+INSERT INTO HoaDon (TongGiaTriHoaDon, NgayXuat, MaKhachHang, MaNhanVien)
 VALUES
-    (1000000, '2023-05-01', 1, 1, 1),
-    (500000, '2023-05-10', 2, 2, 2),
-    (750000, '2023-05-15', 3, 1, 2),
-    (2000000, '2023-05-20', 1, null, 3),
-    (1500000, '2023-05-25', 2, 3, 3),
-    (3000000, '2023-06-01', 3, 1, 1),
-    (5000000, '2023-06-05', 1, 2, 3),
-    (1200000, '2023-06-10', 2, null, 4),
-    (1000000, '2023-06-15', 3, 3, 4),
-    (2500000, '2023-06-20', 1, 1, 1);
+    (1000000, '2023-05-01', 1, 1),
+    (500000, '2023-05-10', 2, 2),
+    (750000, '2023-05-15', 3, 2),
+    (2000000, '2023-05-20', 1, 3),
+    (1500000, '2023-05-25', 2, 3),
+    (3000000, '2023-06-01', 3, 1),
+    (5000000, '2023-06-05', 1, 2),
+    (1200000, '2023-06-10', 2, 4),
+    (1000000, '2023-06-15', 3, 4),
+    (2500000, '2023-06-20', 1, 1);
 
-INSERT INTO ChiTietHoaDon (MaHoaDon, MaSanPham, SoLuong, TongGia)
+INSERT INTO ChiTietHoaDon (MaHoaDon, MaSanPham, SoLuong, MaKhuyenMai, TongGia)
 VALUES
-    (1, 1, 1, 5000000),
-    (1, 2, 1, 3000000),
-    (2, 3, 1, 8900000),
-    (3, 4, 2, 14400000),
-    (4, 5, 1, 6500000),
-    (5, 9, 1, 15000000),
-    (6, 10, 1, 20000000),
-    (7, 11, 1, 12000000),
-    (8, 12, 1, 10000000),
-    (9, 13, 1, 25000000),
-    (10, 14, 1, 535000);
-   
-INSERT INTO NhanVien (MaTaiKhoan,TenNhanVien, HinhDaiDien, VaiTro, HeSoLuong, NgaySinh, NgayVaoLam)
+    (1, 1, 1, 1, 5000000),
+    (1, 2, 1, 2, 3000000),
+    (2, 3, 1, 1, 8900000),
+    (3, 4, 2, null, 14400000),
+    (4, 5, 1, 2, 6500000),
+    (5, 9, 1, 3, 15000000),
+    (6, 10, 1, null, 20000000),
+    (7, 11, 1, 1, 12000000),
+    (8, 12, 1, 2, 10000000),
+    (9, 13, 1, null, 25000000),
+    (10, 14, 1, null, 535000);
+
+
+
+INSERT INTO NhanVien (TenTaiKhoan, MatKhau, NgayLap,TenNhanVien, HinhDaiDien, VaiTro, HeSoLuong, NgaySinh, NgayVaoLam)
 VALUES
-    (4,N'Nguyễn Văn B', N'nhanvien_nguyen_van_b.jpg', N'Quản lý', 3.5, '1980-08-15', '2020-01-01'),
-    (5,N'Trần Thị C', N'nhanvien_tran_thi_c.jpg', N'Bán hàng', 2.0, '1990-05-20', '2021-03-10'),
-    (6,N'Lê Văn D', N'nhanvien_le_van_d.jpg', N'Thủ kho', 2.8, '1985-07-25', '2022-05-15'),
-    (7,N'Phạm Thị E', N'nhanvien_pham_thi_e.jpg', N'Nhân viên kỹ thuật', 2.5, '1992-11-30', '2023-02-20');
+    (N'nv1', N'matkhaunv1', '2023-03-20', N'Nguyễn Văn B', N'nhanvien_nguyen_van_b.jpg', N'Quản lý', 3.5, '1980-08-15', '2020-01-01'),
+    (N'nv2', N'matkhaunv2', '2023-03-22', N'Trần Thị C', N'nhanvien_tran_thi_c.jpg', N'Bán hàng', 2.0, '1990-05-20', '2021-03-10'),
+    (N'nv3', N'matkhaunv3', '2023-03-20', N'Lê Văn D', N'nhanvien_le_van_d.jpg', N'Thủ kho', 2.8, '1985-07-25', '2022-05-15'),
+    (N'nv4', N'matkhaunv4', '2023-03-21', N'Phạm Thị E', N'nhanvien_pham_thi_e.jpg', N'Nhân viên kỹ thuật', 2.5, '1992-11-30', '2023-02-20');
 
 INSERT INTO GioHang (MaKhachHang)
 VALUES
